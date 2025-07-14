@@ -6,13 +6,11 @@ from telegram.ext import (
     filters, ConversationHandler, ContextTypes
 )
 
-# دریافت متغیرهای محیطی
 PORT = int(os.environ.get("PORT", 8443))
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 ADMIN_ID = int(os.environ["ADMIN_ID"])
 WEBHOOK_URL = os.environ["WEBHOOK_URL"]  # مثل https://yourdomain.com
 
-# لاگ
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO
@@ -133,7 +131,7 @@ def main():
         listen="0.0.0.0",
         port=PORT,
         webhook_url=WEBHOOK_URL,
-        webhook_path="/",
+        drop_pending_updates=True,
         stop_signals=None,
     )
 

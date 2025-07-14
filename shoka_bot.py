@@ -6,12 +6,17 @@ from telegram.ext import (
     filters, ConversationHandler, ContextTypes
 )
 
+# دریافت متغیرهای محیطی
 PORT = int(os.environ.get("PORT", 8443))
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 ADMIN_ID = int(os.environ["ADMIN_ID"])
-WEBHOOK_URL = os.environ["WEBHOOK_URL"]
+WEBHOOK_URL = os.environ["WEBHOOK_URL"]  # مثل https://yourdomain.com
 
-logging.basicConfig(level=logging.INFO)
+# لاگ
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
+)
 
 (NAME, PHONE, NATIONAL_ID, MARITAL, ADDRESS, BIRTHDAY, JOB, PLAN, POSTAL, BENEFICIARY_ID, BENEFICIARY_BIRTHDAY) = range(11)
 
@@ -32,7 +37,7 @@ async def get_phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_national_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['national_id'] = update.message.text
     await update.message.reply_text(
-        "وضعیت تاهل:", 
+        "وضعیت تاهل:",
         reply_markup=ReplyKeyboardMarkup([["متاهل"], ["مجرد"]], one_time_keyboard=True, resize_keyboard=True)
     )
     return MARITAL
@@ -55,7 +60,7 @@ async def get_birthday(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_job(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['job'] = update.message.text
     await update.message.reply_text(
-        "طرح پرداخت:", 
+        "طرح پرداخت:",
         reply_markup=ReplyKeyboardMarkup([["ماهانه"], ["سالانه"], ["یکجا"]], one_time_keyboard=True, resize_keyboard=True)
     )
     return PLAN
@@ -79,10 +84,17 @@ async def get_beneficiary_birthday(update: Update, context: ContextTypes.DEFAULT
     context.user_data['beneficiary_birthday'] = update.message.text
     info = context.user_data
     msg = (
-        f"👤 نام: {info['name']}\n📞 تماس: {info['phone']}\n🆔 ملی: {info['national_id']}\n"
-        f"💍 تاهل: {info['marital']}\n🏠 آدرس: {info['address']}\n🎂 تولد: {info['birthday']}\n"
-        f"💼 شغل: {info['job']}\n📅 طرح: {info['plan']}\n📮 پستی: {info['postal']}\n"
-        f"👥 کد ذینفع: {info['beneficiary_id']}\n🎁 تولد ذینفع: {info['beneficiary_birthday']}"
+        f"👤 نام: {info['name']}\n"
+        f"📞 شماره تماس: {info['phone']}\n"
+        f"🆔 کد ملی: {info['national_id']}\n"
+        f"💍 وضعیت تاهل: {info['marital']}\n"
+        f"🏠 آدرس: {info['address']}\n"
+        f"🎂 تاریخ تولد: {info['birthday']}\n"
+        f"💼 شغل: {info['job']}\n"
+        f"📅 طرح پرداخت: {info['plan']}\n"
+        f"📮 کد پستی: {info['postal']}\n"
+        f"👥 کد ملی ذینفع: {info['beneficiary_id']}\n"
+        f"🎁 تاریخ تولد ذینفع: {info['beneficiary_birthday']}"
     )
     await context.bot.send_message(chat_id=ADMIN_ID, text=msg)
     await update.message.reply_text("✅ اطلاعات شما ثبت شد. با تشکر")
@@ -115,10 +127,14 @@ def main():
 
     application.add_handler(conv_handler)
 
+    logging.info(f"Starting webhook on port {PORT} with URL {WEBHOOK_URL}")
+
     application.run_webhook(
         listen="0.0.0.0",
         port=PORT,
         webhook_url=WEBHOOK_URL,
+        webhook_path="/",
+        stop_signals=None,
     )
 
 if __name__ == "__main__":
